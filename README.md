@@ -1,4 +1,4 @@
-## xpocket-plugin-hsdb
+## HSDB Plugin For XPocket
 ![XPocket](resourse/xpocket.jpg)
 
 ### HSDB Plugin For XPocket
