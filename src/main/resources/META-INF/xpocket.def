@@ -1,0 +1,14 @@
+plugin-name=jhsdb
+plugin-namespace=jdk
+plugin-version=0.0.3-SNAPSHOT
+plugin-author=PerfMa
+plugin-project=https://github.com/perfma/xpocket-plugin-hsdb
+plugin-type=java-tools
+plugin-dependency=sa-jdi.jar|jhsdb
+jdk-version=8+
+jvm=hotspot
+os=win,linux,macos
+sys-dependency=
+plugin-command-package=com.perfma.xpocket.plugin.hsdb
+main-implementation=com.perfma.xpocket.plugin.hsdb.HSDBPlugin
+usage-tips=only support Windows platform
