@@ -8,7 +8,10 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -52,6 +55,21 @@ public class HSDBPlugin extends AbstractXPocketPlugin implements Runnable {
 
     private int pid = -1;
 
+    private static final String USER_HOME = System.getProperty("user.home");
+
+    private static final String path = USER_HOME + File.separator + ".xpocket"
+            + File.separator + ".hsdb" + File.separator;
+
+    private static final String ENHANCE_HSDB_JAR = "clhsdb-enhance-2021-03-jar-with-dependencies.jar";
+
+    private static String enhanceHsdbPath;
+
+    private boolean enhanceMode;
+
+    private static final List<String> ENHANCE_COMMANDS = Arrays.asList(
+        "classdetail", "instance", "method", "objectvisit", "stack", "typedetail"
+    );
+
     static {
 
         int version = 8;
@@ -89,11 +107,34 @@ public class HSDBPlugin extends AbstractXPocketPlugin implements Runnable {
         }
     }
 
+
     @Override
     public void init(XPocketProcess process) {
         String[] notNeedAttachCommand = {"assert", "attach", "echo", "help",
             "history", "quit", "versioncheck", "verbose"};
         notNeedAttach.addAll(Arrays.asList(notNeedAttachCommand));
+
+        try {
+            File file = new File(path );
+            if(!file.exists()) {
+                file.mkdirs();
+            }
+            enhanceHsdbPath = file.getAbsolutePath() + File.separator + ENHANCE_HSDB_JAR;
+
+            InputStream is = HSDBPlugin.class.getClassLoader().getResourceAsStream(ENHANCE_HSDB_JAR);
+            if(is != null) {
+                File f = new File(path + ENHANCE_HSDB_JAR);
+                if(f.exists()){
+                    f.delete();
+                }
+                Path targetFile = f.toPath();
+                Files.copy(is, targetFile);
+                is.close();
+            }
+
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -171,6 +212,9 @@ public class HSDBPlugin extends AbstractXPocketPlugin implements Runnable {
     }
 
     public boolean isAvaibleNow(String cmd) {
+        if(enhanceMode && ENHANCE_COMMANDS.contains(cmd)){
+            return true;
+        }
         if (clhsdbProc == null || !clhsdbProc.isAlive()) {
             return "clhsdb".equals(cmd);
         } else if (!attachStatus) {
@@ -199,6 +243,9 @@ public class HSDBPlugin extends AbstractXPocketPlugin implements Runnable {
                                 i++;
                                 hsdbjarPath = args[i];
                                 break;
+                            case "-e":
+                                enhanceMode = true;
+                                break;
                             default:
                                 if (pos < input.length) {
                                     input[pos++] = arg;
@@ -223,10 +270,22 @@ public class HSDBPlugin extends AbstractXPocketPlugin implements Runnable {
                         if (hsdbjarPath == null) {
                             hsdbjarPath = JAVA_HOME + "/lib/sa-jdi.jar";
                         }
+                        if(enhanceMode){
+                            if (osName.toUpperCase().startsWith("WIN")){
+                                hsdbjarPath = "\"" + enhanceHsdbPath + "\"";
+                            }else {
+                                hsdbjarPath = enhanceHsdbPath;
+                            }
+                        }
                         File file = new File(hsdbjarPath);
                         if (file.exists()) {
-                            clhsdbProc = Runtime.getRuntime().exec(
-                                    String.format(START_CMD_TEMP, hsdbjarPath, params));
+                            if(enhanceMode){
+                                clhsdbProc = Runtime.getRuntime().exec(
+                                        String.format("java -jar %s %s", hsdbjarPath, params));
+                            }else {
+                                clhsdbProc = Runtime.getRuntime().exec(
+                                        String.format(START_CMD_TEMP, hsdbjarPath, params));
+                            }
                             Thread t = new Thread(this);
                             t.start();
                         } else {
