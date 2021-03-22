@@ -67,7 +67,7 @@ import com.perfma.xlab.xpocket.spi.process.XPocketProcess;
     "mem",
     "sysprops",
     "universe",
-    "whatis"},
+    "whatis", "classdetail", "instance", "method", "objectvisit", "stack", "typedetail"},
         usage = {"clhsdb [path of sa-jdi.jar] start hsdb command line",
             "assert true | false",
             "attach pid | exec core",
@@ -126,7 +126,13 @@ import com.perfma.xlab.xpocket.spi.process.XPocketProcess;
             "mem address [ length ]",
             "sysprops",
             "universe",
-            "whatis address"})
+            "whatis address",
+            "classdetail  [address | fullClassName]",
+            "instance address",
+            "method address",
+            "objectvisit [-d] fullClassName[.class]",
+            "stack threadName",
+            "typedetail typeName"})
 public class HSDBCommand extends AbstractXPocketCommand {
 
     private HSDBPlugin plugin;
