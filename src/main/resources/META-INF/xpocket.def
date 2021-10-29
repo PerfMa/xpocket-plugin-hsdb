@@ -1,6 +1,7 @@
 plugin-name=jhsdb
 plugin-namespace=jdk
 plugin-version=1.0.0-RELEASE
+plugin-description=XPocket plugin implementation of jhsdb.\n You can use the jhsdb tool to attach to a Java process or to launch a postmortem debugger to analyze the content of a core dump from a crashed Java Virtual Machine (JVM). \n Learn more : https://plugin.xpocket.perfma.com/plugin/54
 plugin-author=PerfMa
 plugin-project=https://github.com/perfma/xpocket-plugin-hsdb
 plugin-type=java-tools
